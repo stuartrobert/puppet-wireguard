@@ -23,7 +23,6 @@ define wireguard::provider::wgquick (
     'table'             => $table,
     'firewall_mark'     => $firewall_mark,
     'mtu'               => $mtu,
-    'peers'             => $peers,
     'addresses'         => $addresses,
     'preup_cmds'        => $preup_cmds,
     'postup_cmds'       => $postup_cmds,
@@ -32,10 +31,23 @@ define wireguard::provider::wgquick (
     'default_allowlist' => $default_allowlist,
   }
 
-  file { "/etc/wireguard/${interface}.conf":
-    ensure  => $ensure,
-    content => epp("${module_name}/wireguard_conf.epp", $params),
-    owner   => 'root',
-    mode    => '0600',
+  if ! empty($peers) {
+    file { "/etc/wireguard/${interface}.conf":
+      ensure  => $ensure,
+      content => epp("${module_name}/wireguard_conf.epp", $params + { 'peers' => $peers }),
+      owner   => 'root',
+      mode    => '0600',
+    }
+  } else {
+    concat { "/etc/wireguard/${interface}.conf":
+      ensure  => $ensure,
+      owner   => 'root',
+      mode    => '0600',
+    }
+    concat::fragment { "${interface}_head":
+      order   => 10,
+      target  => "/etc/wireguard/${interface}.conf",
+      content => epp("${module_name}/wireguard_head.epp", $params),
+    }
   }
 }
