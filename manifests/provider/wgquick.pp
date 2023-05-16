@@ -4,6 +4,7 @@
 define wireguard::provider::wgquick (
   String[1] $interface = $title,
   Enum['present', 'absent'] $ensure = 'present',
+  Boolean $enable = true,
   Wireguard::Peers $peers = [],
   Integer[1024, 65000] $dport = Integer(regsubst($title, '^\D+(\d+)$', '\1')),
   Optional[String[1]] $table = undef,
@@ -40,14 +41,24 @@ define wireguard::provider::wgquick (
     }
   } else {
     concat { "/etc/wireguard/${interface}.conf":
-      ensure  => $ensure,
-      owner   => 'root',
-      mode    => '0600',
+      ensure => $ensure,
+      owner  => 'root',
+      mode   => '0600',
+      notify => Service["wg-quick@${interface}"],
     }
     concat::fragment { "${interface}_head":
       order   => 10,
       target  => "/etc/wireguard/${interface}.conf",
       content => epp("${module_name}/wireguard_head.epp", $params),
     }
+  }
+
+  $svc_ensure = $ensure ? {
+      present => 'running',
+      absent  => 'stopped',
+  }
+  service { "wg-quick@${interface}":
+    ensure => $svc_ensure,
+    enable => $enable,
   }
 }
