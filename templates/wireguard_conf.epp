@@ -4,7 +4,7 @@
     Optional[String[1]] $table,
     Optional[Integer] $firewall_mark,
     Wireguard::Peers $peers,
-    Array[Hash] $addresses,
+    Wireguard::Addresses::Wgquick $addresses,
     Array[String[1]] $preup_cmds,
     Array[String[1]] $postup_cmds,
     Array[String[1]] $predown_cmds,
@@ -13,9 +13,9 @@
     Optional[Integer[1280, 9000]] $mtu = undef,
 | -%>
 # THIS FILE IS MANAGED BY PUPPET
-<% $addresses.each |$address| { -%>
 
 [Interface]
+<% $addresses.each |$address| { -%>
 <% $address.each |$key, $value| { -%>
 <%= $key %>=<%= $value %>
 <% } -%>
@@ -46,10 +46,10 @@ MTU=<%= $mtu %>
 
 <% $peers.each |$peer| { -%>
 
-<% if $peer['description'] { -%>
-# <%= $peer['description'] %>
-<% } -%>
 [Peer]
+<% if $peer['description'] { -%>
+# friendly_name = <%= $peer['description'] %>
+<% } -%>
 PublicKey=<%= $peer['public_key'] %>
 <% if $peer['endpoint'] { -%>
 Endpoint=<%= $peer['endpoint'] %>
