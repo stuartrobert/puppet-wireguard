@@ -4,6 +4,7 @@
 define wireguard::provider::wgquick (
   String[1] $interface = $title,
   Enum['present', 'absent'] $ensure = 'present',
+  Boolean $enable = true,
   Wireguard::Peers $peers = [],
   Integer[1024, 65000] $dport = Integer(regsubst($title, '^\D+(\d+)$', '\1')),
   Optional[String[1]] $table = undef,
@@ -23,7 +24,6 @@ define wireguard::provider::wgquick (
     'table'             => $table,
     'firewall_mark'     => $firewall_mark,
     'mtu'               => $mtu,
-    'peers'             => $peers,
     'addresses'         => $addresses,
     'preup_cmds'        => $preup_cmds,
     'postup_cmds'       => $postup_cmds,
@@ -32,11 +32,35 @@ define wireguard::provider::wgquick (
     'default_allowlist' => $default_allowlist,
   }
 
-  file { "${wireguard::config_directory}/${interface}.conf":
-    ensure  => $ensure,
-    content => epp("${module_name}/wireguard_conf.epp", $params),
-    owner   => 'root',
-    group   => $wireguard::config_directory_group,
-    mode    => '0640',
+  if ! empty($peers) {
+    file { "${wireguard::config_directory}/${interface}.conf":
+      ensure  => $ensure,
+      content => epp("${module_name}/wireguard_conf.epp", $params + { 'peers' => $peers }),
+      owner   => 'root',
+      group   => $wireguard::config_directory_group,
+      mode    => '0640',
+    }
+  } else {
+    concat { "${wireguard::config_directory}/${interface}.conf":
+      ensure => $ensure,
+      owner  => 'root',
+      group   => $wireguard::config_directory_group,
+      mode   => '0640',
+      notify => Service["wg-quick@${interface}"],
+    }
+    concat::fragment { "${interface}_head":
+      order   => 10,
+      target  => "${wireguard::config_directory}/${interface}.conf",
+      content => epp("${module_name}/wireguard_head.epp", $params),
+    }
+  }
+
+  $svc_ensure = $ensure ? {
+    present => 'running',
+    absent  => 'stopped',
+  }
+  service { "wg-quick@${interface}":
+    ensure => $svc_ensure,
+    enable => $enable,
   }
 }

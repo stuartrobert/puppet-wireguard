@@ -13,6 +13,7 @@
 #### Public Defined types
 
 * [`wireguard::interface`](#wireguard--interface): manages a wireguard setup
+* [`wireguard::peer`](#wireguard--peer): define a wireguard peer
 
 #### Private Defined types
 
@@ -42,7 +43,6 @@ The following parameters are available in the `wireguard` class:
 * [`config_directory`](#-wireguard--config_directory)
 * [`purge_unknown_keys`](#-wireguard--purge_unknown_keys)
 * [`interfaces`](#-wireguard--interfaces)
-* [`default_allowlist`](#-wireguard--default_allowlist)
 
 ##### <a name="-wireguard--config_directory_group"></a>`config_directory_group`
 
@@ -486,6 +486,74 @@ Array[Struct[{
     'DNS' => Optional[Variant[Stdlib::IP::Address::V4,Stdlib::IP::Address::V6]],
   }]]
 ```
+
+Default value: `[]`
+
+### <a name="wireguard--peer"></a>`wireguard::peer`
+
+define a wireguard peer
+
+#### Parameters
+
+The following parameters are available in the `wireguard::peer` defined type:
+
+* [`interface`](#-wireguard--peer--interface)
+* [`description`](#-wireguard--peer--description)
+* [`public_key`](#-wireguard--peer--public_key)
+* [`endpoint`](#-wireguard--peer--endpoint)
+* [`allowed_ips`](#-wireguard--peer--allowed_ips)
+* [`preshared_key`](#-wireguard--peer--preshared_key)
+* [`persistent_keepalive`](#-wireguard--peer--persistent_keepalive)
+
+##### <a name="-wireguard--peer--interface"></a>`interface`
+
+Data type: `String[1]`
+
+the title of the defined resource, will be used for the targetted wg interface
+
+##### <a name="-wireguard--peer--description"></a>`description`
+
+Data type: `Optional[String[1]]`
+
+provide some identification details about the peer
+
+Default value: `undef`
+
+##### <a name="-wireguard--peer--public_key"></a>`public_key`
+
+Data type: `String[1]`
+
+base64 encoded pubkey from the remote peer
+
+##### <a name="-wireguard--peer--endpoint"></a>`endpoint`
+
+Data type: `String[1]`
+
+fqdn:port or ip:port where we connect to
+
+##### <a name="-wireguard--peer--allowed_ips"></a>`allowed_ips`
+
+Data type: `Array[Variant[Stdlib::IP::Address::V4,Stdlib::IP::Address::V6]]`
+
+different addresses that should be routed to this peer
+
+##### <a name="-wireguard--peer--preshared_key"></a>`preshared_key`
+
+Data type: `Optional[String[1]]`
+
+Define preshared key for the remote peer
+
+Default value: `undef`
+
+##### <a name="-wireguard--peer--persistent_keepalive"></a>`persistent_keepalive`
+
+Data type: `Integer[0,65535]`
+
+is set to 1 or greater, that's the interval in seconds wireguard sends a keepalive to the other peer(s). Useful if the sender is behind a NAT gateway or has a dynamic ip address
+
+Default value: `0`
+
+## Data types
 
 ### <a name="Wireguard--Peers"></a>`Wireguard::Peers`
 
