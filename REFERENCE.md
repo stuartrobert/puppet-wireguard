@@ -50,6 +50,8 @@ Data type: `String`
 
 specify the group on `$config_directory`
 
+Default value: `'systemd-network'`
+
 ##### <a name="-wireguard--manage_package"></a>`manage_package`
 
 Data type: `Boolean`
